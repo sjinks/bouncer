@@ -1,5 +1,4 @@
-bouncer
-=======
+# bouncer [![Build Status](https://travis-ci.org/sjinks/bouncer.png?branch=master)](https://travis-ci.org/sjinks/bouncer)
 
 epoll()-based SMTP server that bounces incoming connections
 
