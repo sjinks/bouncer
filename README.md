@@ -2,7 +2,7 @@
 
 epoll()-based SMTP server that bounces incoming connections
 
-**Usage**
+## Usage
 
 One of the usages of `bouncer` is redirection of the traffic to known email trap servers to `bouncer`.
 For example, if you know that email traps have IPs 1.2.3.4, 5.6.7.8 and 9.10.11.12, you can do something like this:
