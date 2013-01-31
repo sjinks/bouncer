@@ -17,7 +17,7 @@ for i in 1.2.3.4 5.6.7.8 9.10.11.12; do
 done
 ```
 
-Then, when your mail server attempts to conecrt to a trap, the connection will be redirected to `bouncer`:
+Then, when your mail server attempts to connect to a trap, the connection will be redirected to `bouncer`:
 
 ```
 $ telnet 1.2.3.4 smtp
