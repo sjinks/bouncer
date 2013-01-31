@@ -1,6 +1,6 @@
 /**
  * @file common.h
- * @date 01.08.2011
+ * @date Aug 1, 2011
  * @author Vladimir Kolesnikov <vladimir@free-sevastopol.com>
  */
 

@@ -1,6 +1,6 @@
 /**
  * @file common.c
- * @date 01.08.2011
+ * @date Aug 1, 2011
  * @author Vladimir Kolesnikov <vladimir@free-sevastopol.com>
  */
 
@@ -29,11 +29,22 @@ struct entry_t sockets[BOUNCER_MAX_EVENTS];
 struct data_t data[BOUNCER_MAX_EVENTS];
 int connections = 0;
 
+/**
+ * Sets the termination flag
+ *
+ * @brief SIGTERM/SIGINT/SIGQUIT handler
+ */
 static void signal_handler(int signal)
 {
 	terminate = 1;
 }
 
+/**
+ * @brief Installs signal handlers
+ * @see signal_handler()
+ *
+ * SIGPIPE is ignored, @c signal_handler() is set to handle SIGTERM, SIGINT and SIGQUIT
+ */
 void set_signals(void)
 {
 	struct sigaction sa;
@@ -49,6 +60,12 @@ void set_signals(void)
 	sigaction(SIGQUIT, &sa, NULL);
 }
 
+/**
+ * Returns the index of the socket @a sock in the list of connections
+ *
+ * @param sock Socket to find
+ * @return Index of the socket, -1 on failure
+ */
 int find_socket(int sock)
 {
 	int i;
@@ -63,7 +80,11 @@ int find_socket(int sock)
 }
 
 /**
+ * @brief Drops privileges
+ * @return -1 on failure, 0 on success
  * @see http://refspecs.freestandards.org/LSB_3.0.0/LSB-Core-generic/LSB-Core-generic/usernames.html
+ *
+ * Tries to change the user identity to @c nobody or @c daemon, then creates @c /var/run/bouncer directory, chnages the current directory to it and chroot()'s into it.
  */
 int drop_privs(void)
 {
@@ -100,6 +121,11 @@ int drop_privs(void)
 	return (-1 != setgid(gid) && -1 != setuid(uid)) ? 0 : -1;
 }
 
+/**
+ * @bried Makes the descriptor @a fd non-blocking
+ * @param fd Descriptor
+ * @return 0 on success, -1 on failure
+ */
 int make_nonblocking(int fd)
 {
 	int flags = fcntl(fd, F_GETFL, 0);
@@ -110,6 +136,10 @@ int make_nonblocking(int fd)
 	return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 }
 
+/**
+ * @brief Creates a new non-blocking listening socket that is bound to @c localhost:10025
+ * @return Socket descriptor on success, -1 on failure
+ */
 int create_socket(void)
 {
 	int sock;
@@ -124,13 +154,13 @@ int create_socket(void)
 	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &res, sizeof(res));
 
 	sa.sin_family      = AF_INET;
-	sa.sin_port        = htons(25);
+	sa.sin_port        = htons(10025);
 	sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 
 	if (
-			make_nonblocking(sock) < 0
-		 || bind(sock, (struct sockaddr*)&sa, sizeof(sa)) < 0
-		 || listen(sock, 512) < 0
+		   make_nonblocking(sock) < 0
+		|| bind(sock, (struct sockaddr*)&sa, sizeof(sa)) < 0
+		|| listen(sock, 512) < 0
 		)
 	{
 		int e = errno;
@@ -142,6 +172,13 @@ int create_socket(void)
 	return sock;
 }
 
+/**
+ * @brief Wrapper around @c read() that handles @c EINTR gracefully
+ * @param fd Descriptor
+ * @param buf Pointer to the buffer to read the data into
+ * @param size Number of bytes to read
+ * @return -1 on failure, number of bytes actually read on success
+ */
 int safe_read(int fd, void* buf, size_t size)
 {
 	ssize_t nread;
@@ -152,6 +189,13 @@ int safe_read(int fd, void* buf, size_t size)
 	return nread;
 }
 
+/**
+ * @brief Wrapper around @c write() that handles @c EINTR gracefully
+ * @param fd Descriptor
+ * @param buf Pointer to the buffer to write the data from
+ * @param size Number of bytes to write
+ * @return -1 on failure, number of bytes actually written on success
+ */
 int safe_write(int fd, const void* buf, size_t size)
 {
 	ssize_t written;

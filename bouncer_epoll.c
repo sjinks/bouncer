@@ -1,6 +1,6 @@
 /**
  * @file bouncer_epoll.c
- * @date 31.07.2011
+ * @date Jul 31, 2011
  * @author Vladimir Kolesnikov <vladimir@free-sevastopol.com>
  */
 
@@ -15,6 +15,13 @@
 
 static const char* err_timeout  = "421 4.4.2 localhost.localdomain Timeout exceeded.\r\n";
 
+/**
+ * Tries to accept he incoming connection
+ *
+ * @param listener The socket the server listens to
+ * @param eh @c epoll descriptor
+ * @return The descriptor of the new connection, -1 on failure (@c errno will hold the error code)
+ */
 static int accept_socket(int listener, int eh)
 {
 	int conn = accept(listener, NULL, 0);
@@ -35,7 +42,7 @@ static int accept_socket(int listener, int eh)
 				sockets[connections].sock         = conn;
 				sockets[connections].data         = &data[connections];
 				sockets[connections].timeout      = now + 300; /* 4.5.3.2.7. Server Timeout: 5 Minutes. */
-				sockets[connections].hard_timeout = now + 900; /* We are not a mail server after all - client should disconnect as soon as it gets 554 */
+				sockets[connections].hard_timeout = now + 900; /* We are not a mail server after all - the client should disconnect as soon as it gets 554 */
 
 				data[connections].state     = S0;
 				data[connections].nread     = 0;
@@ -55,6 +62,14 @@ static int accept_socket(int listener, int eh)
 	return -1;
 }
 
+
+/**
+ * Writes a NULL-terminated @a msg (if it is not NULL) to @a sock, gracefully closes the connection and frees all associated resources
+ *
+ * @param sock Socket descriptor
+ * @param eh @c epoll descriptor
+ * @param msg Message to send before close
+ */
 static void close_socket(int sock, int eh, const char* msg)
 {
 	int idx;
@@ -80,6 +95,12 @@ static void close_socket(int sock, int eh, const char* msg)
 	}
 }
 
+/**
+ * Main event loop
+ *
+ * @param eh @c epoll descriptor
+ * @param listener The socket the server listens to
+ */
 static void event_loop(int eh, int listener)
 {
 	struct epoll_event events[BOUNCER_MAX_EVENTS];
@@ -98,7 +119,7 @@ static void event_loop(int eh, int listener)
 			int sock = events[i].data.fd;
 			if (sock == listener) {
 				accept_socket(listener, eh);
-				/* There's nothing bad if accept() failed: if it is our fault, the client will retry later */
+				/* There's nothing bad if accept() failed: if this is our fault, the client will retry later */
 			}
 			else if (events[i].events & (EPOLLERR | EPOLLHUP)) {
 				close_socket(sock, eh, NULL);
