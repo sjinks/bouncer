@@ -5,7 +5,6 @@
  */
 
 #include "common.h"
-#include <unistd.h>
 #include <fcntl.h>
 #include <pwd.h>
 #include <sys/types.h>
@@ -183,7 +182,7 @@ int create_socket(void)
  * @param size Number of bytes to read
  * @return -1 on failure, number of bytes actually read on success
  */
-int safe_read(int fd, void* buf, size_t size)
+ssize_t safe_read(int fd, void* buf, size_t size)
 {
 	ssize_t nread;
 	do {
@@ -200,7 +199,7 @@ int safe_read(int fd, void* buf, size_t size)
  * @param size Number of bytes to write
  * @return -1 on failure, number of bytes actually written on success
  */
-int safe_write(int fd, const void* buf, size_t size)
+ssize_t safe_write(int fd, const void* buf, size_t size)
 {
 	ssize_t written;
 	do {

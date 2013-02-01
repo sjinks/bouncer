@@ -7,6 +7,7 @@
 #ifndef BOUNCER_COMMON_H_
 #define BOUNCER_COMMON_H_
 
+#include <unistd.h>
 #include <signal.h>
 #include <time.h>
 
@@ -60,8 +61,8 @@ int drop_privs(void);
 void set_signals(void);
 int make_nonblocking(int fd);
 int create_socket(void);
-int safe_read(int fd, void* buf, size_t size);
-int safe_write(int fd, const void* buf, size_t size);
+ssize_t safe_read(int fd, void* buf, size_t size);
+ssize_t safe_write(int fd, const void* buf, size_t size);
 int process_event(int sock, const int flags);
 int find_socket(int sock);
 
