@@ -17,6 +17,10 @@
 #include <string.h>
 #include <ctype.h>
 
+#ifndef BOUNCER_PORT
+#	define BOUNCER_PORT 10025
+#endif
+
 static const char* str_greeting = "554 5.3.2 HELLO FROM THE BOUNCER!\r\n";
 static const char* str_quit     = "221 2.0.0 Bye.\r\n";
 static const char* str_noop     = "250 2.0.0 OK.\r\n";
@@ -154,7 +158,7 @@ int create_socket(void)
 	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &res, sizeof(res));
 
 	sa.sin_family      = AF_INET;
-	sa.sin_port        = htons(10025);
+	sa.sin_port        = htons(BOUNCER_PORT);
 	sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 
 	if (
