@@ -1,7 +1,7 @@
 /**
  * @file common.h
  * @date Aug 1, 2011
- * @author Vladimir Kolesnikov <vladimir@free-sevastopol.com>
+ * @author Volodymyr Kolesnykov <volodymyr@wildwolf.name>
  */
 
 #ifndef BOUNCER_COMMON_H_

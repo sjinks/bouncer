@@ -1,7 +1,7 @@
 /**
  * @file bouncer_epoll.c
  * @date Jul 31, 2011
- * @author Vladimir Kolesnikov <vladimir@free-sevastopol.com>
+ * @author Volodymyr Kolesnykov <volodymyr@wildwolf.name>
  */
 
 #include <stdlib.h>
