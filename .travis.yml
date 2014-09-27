@@ -1,12 +1,21 @@
 language: c
 
-branches:
-  only:
-    - master
+env:
+  global:
+    - secure: "B/wE3SmuXmZtWhuHnd9F6asJHv9XzgElZ0eb+AZ/lxa5kfwACyIxnI3CeRAVCN8ccyvdIFeclwJ4LoDvV5FCowA/BXqX1GvVebp0jJSkAX8cEgBAmKKRGsAQGAglJacfrz+KKiMQMvCn8TwNsR90dHrv3zLLGJ+WGD3ANTelqlU="
 
 compiler:
   - gcc
   - clang
+
+addons:
+  coverity_scan:
+    project:
+      name: "sjinks/bouncer"
+      description: "Bouncer"
+    notification_email: volodymyr@wildwolf.name
+    build_command: make
+    branch_pattern: coverity
 
 script:
   - make
