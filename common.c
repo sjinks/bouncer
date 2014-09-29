@@ -111,7 +111,7 @@ int drop_privs(void)
 	}
 
 	if (
-	       mkdir("/var/run/bouncer", S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) < 0
+	       (mkdir("/var/run/bouncer", S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) < 0 && EEXIST != errno)
 	    || chroot("/var/run/bouncer") < 0
 	    || chdir("/") < 0
 	    || setgid(gid) < 0
