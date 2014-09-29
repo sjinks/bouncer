@@ -111,12 +111,13 @@ int drop_privs(void)
 	}
 
 	mkdir("/var/run/bouncer", S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
-	res = chdir("/var/run/bouncer");
+
+	res = chroot("/var/run/bouncer");
 	if (res < 0) {
 		return -1;
 	}
 
-	res = chroot("/var/run/bouncer");
+	res = chdir("/");
 	if (res < 0) {
 		return -1;
 	}
