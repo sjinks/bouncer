@@ -155,7 +155,9 @@ int create_socket(void)
 		return -1;
 	}
 
-	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &res, sizeof(res));
+	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &res, sizeof(res)) < 0) {
+		return -1;
+	}
 
 	memset(&sa, 0, sizeof(sa));
 	sa.sin_family      = AF_INET;
