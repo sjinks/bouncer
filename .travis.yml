@@ -6,7 +6,6 @@ env:
 
 compiler:
   - gcc
-  - clang
 
 addons:
   coverity_scan:
