@@ -154,6 +154,9 @@ int create_socket(void)
 	}
 
 	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &res, sizeof(res)) < 0) {
+		int e = errno;
+		close(sock);
+		errno = e;
 		return -1;
 	}
 
