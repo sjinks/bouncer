@@ -156,6 +156,7 @@ int create_socket(void)
 
 	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &res, sizeof(res));
 
+	memset(&sa, 0, sizeof(sa));
 	sa.sin_family      = AF_INET;
 	sa.sin_port        = htons(BOUNCER_PORT);
 	sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
