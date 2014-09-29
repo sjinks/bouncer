@@ -110,19 +110,17 @@ int drop_privs(void)
 		return -1;
 	}
 
-	mkdir("/var/run/bouncer", S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
-
-	res = chroot("/var/run/bouncer");
-	if (res < 0) {
+	if (
+	       mkdir("/var/run/bouncer", S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) < 0
+	    || chroot("/var/run/bouncer") < 0
+	    || chdir("/") < 0
+	    || setgid(gid) < 0
+	    || setuid(uid) < 0
+	) {
 		return -1;
 	}
 
-	res = chdir("/");
-	if (res < 0) {
-		return -1;
-	}
-
-	return (-1 != setgid(gid) && -1 != setuid(uid)) ? 0 : -1;
+	return 0;
 }
 
 /**
