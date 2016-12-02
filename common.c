@@ -94,7 +94,6 @@ int drop_privs(void)
 	struct passwd* e;
 	uid_t uid;
 	gid_t gid;
-	int res;
 
 	e = getpwnam("nobody");
 	if (!e) {
@@ -124,7 +123,7 @@ int drop_privs(void)
 }
 
 /**
- * @bried Makes the descriptor @a fd non-blocking
+ * @brief Makes the descriptor @a fd non-blocking
  * @param fd Descriptor
  * @return 0 on success, -1 on failure
  */
@@ -214,7 +213,7 @@ ssize_t safe_write(int fd, const void* buf, size_t size)
 	return written;
 }
 
-int do_write(struct data_t* x, struct entry_t* e, const void* buf, size_t len, enum state_t state)
+static int do_write(struct data_t* x, struct entry_t* e, const void* buf, size_t len, enum state_t state)
 {
 	time_t now = time(NULL);
 
@@ -224,15 +223,15 @@ int do_write(struct data_t* x, struct entry_t* e, const void* buf, size_t len, e
 	}
 
 	ssize_t n = safe_write(e->sock, x->write_buf + x->nwritten, x->towrite);
-	if (n == x->towrite) {
+	if (n > 0 && (size_t)n == x->towrite) {
 		x->towrite   = 0;
 		x->write_buf = NULL;
 		x->state     = state;
 		e->timeout   = now + 300;
 	}
 	else if (n > 0) {
-		x->nwritten += n;
-		x->towrite  -= n;
+		x->nwritten += (size_t)n;
+		x->towrite  -= (size_t)n;
 		e->timeout   = now + 300;
 	}
 	else if ((EAGAIN != errno && EWOULDBLOCK != errno) || !n) {
@@ -267,7 +266,7 @@ int process_event(int sock, const int flags)
 				if (flags & BOUNCER_CAN_READ) {
 					ssize_t n = safe_read(sock, x->read_buf + x->nread, 512 - x->nread);
 					if (n > 0) {
-						x->nread += n;
+						x->nread += (size_t)n;
 						e.timeout = now + 300;
 					}
 					else if ((EAGAIN != errno && EWOULDBLOCK != errno) || !n) {
@@ -287,7 +286,7 @@ int process_event(int sock, const int flags)
 								break;
 							}
 							else {
-								*p = toupper(*p);
+								*p = (char)toupper(*p);
 							}
 						}
 
@@ -304,8 +303,8 @@ int process_event(int sock, const int flags)
 							x->state = S5;
 						}
 
-						memcpy(x->read_buf, pos+1, x->nread - (pos - x->read_buf + 1));
-						x->nread = x->nread - (pos - x->read_buf + 1);
+						memcpy(x->read_buf, pos+1, x->nread - (size_t)(pos - x->read_buf + 1));
+						x->nread = x->nread - (size_t)(pos - x->read_buf + 1);
 					}
 					else if (512 == x->nread) {
 						x->state = S4;

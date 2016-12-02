@@ -16,7 +16,7 @@
 static const char* err_timeout  = "421 4.4.2 localhost.localdomain Timeout exceeded.\r\n";
 
 /**
- * Tries to accept he incoming connection
+ * Tries to accept the incoming connection
  *
  * @param listener The socket the server listens to
  * @param eh @c epoll descriptor

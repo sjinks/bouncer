@@ -16,5 +16,7 @@ addons:
     build_command: make
     branch_pattern: coverity
 
+sudo: false
+
 script:
   - make
