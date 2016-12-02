@@ -36,19 +36,19 @@
 enum state_t { S0, S1, S2, S3, S4, S5, FIN, ERR };
 
 struct data_t {
-	enum state_t state;
 	size_t nread;
 	size_t nwritten;
 	size_t towrite;
-	char read_buf[520]; /* 4.5.3.1.4. Command Line: The maximum total length of a command line including the command word and the <CRLF> is 512 octets.*/
 	const char* write_buf;
+	char read_buf[516]; /* 4.5.3.1.4. Command Line: The maximum total length of a command line including the command word and the <CRLF> is 512 octets.*/
+	enum state_t state;
 };
 
 struct entry_t {
-	int sock;
 	struct data_t* data;
 	time_t timeout;
 	time_t hard_timeout;
+	int sock;
 };
 
 extern volatile sig_atomic_t terminate;
