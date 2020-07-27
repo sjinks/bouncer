@@ -12,7 +12,7 @@ endif
 bouncer: $(BOUNCER_OBJ)
 	$(CC) $^ $(LDFLAGS) -o $@
 
-%o: %c
+%.o: %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c "$<" -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@"
 
 clean: objclean depclean
