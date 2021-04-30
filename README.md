@@ -1,4 +1,7 @@
-# bouncer [![Build Status](https://travis-ci.org/sjinks/bouncer.png?branch=master)](https://travis-ci.org/sjinks/bouncer) [![Coverity Scan Build Status](https://scan.coverity.com/projects/3116/badge.svg)](https://scan.coverity.com/projects/3116)
+# bouncer
+
+[![Build](https://github.com/sjinks/bouncer/actions/workflows/test.yml/badge.svg)](https://github.com/sjinks/bouncer/actions/workflows/test.yml)
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/3116/badge.svg)](https://scan.coverity.com/projects/3116)
 
 epoll()-based SMTP server that bounces incoming connections
 
