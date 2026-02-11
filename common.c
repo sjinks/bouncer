@@ -220,6 +220,7 @@ static int do_write(struct data_t* x, struct entry_t* e, const void* buf, size_t
 	if (!x->write_buf) {
 		x->write_buf = buf;
 		x->towrite   = len;
+		x->nwritten  = 0;
 	}
 
 	ssize_t n = safe_write(e->sock, x->write_buf + x->nwritten, x->towrite);
@@ -251,15 +252,15 @@ int process_event(int sock, const int flags)
 		return 1;
 	}
 
-	struct entry_t e = sockets[idx];
-	struct data_t* x = e.data;
+	struct entry_t* e = &sockets[idx];
+	struct data_t* x = e->data;
 	int done = 0;
 
 	while (!done) {
 		time_t now = time(NULL);
 		switch (x->state) {
 			case S0:
-				done = !(flags & BOUNCER_CAN_WRITE) || do_write(x, &e, str_greeting, strlen(str_greeting), S1);
+				done = !(flags & BOUNCER_CAN_WRITE) || do_write(x, e, str_greeting, strlen(str_greeting), S1);
 				break;
 
 			case S1:
@@ -267,48 +268,71 @@ int process_event(int sock, const int flags)
 					ssize_t n = safe_read(sock, x->read_buf + x->nread, 512 - x->nread);
 					if (n > 0) {
 						x->nread += (size_t)n;
-						e.timeout = now + 300;
+						e->timeout = now + 300;
 					}
 					else if ((EAGAIN != errno && EWOULDBLOCK != errno) || !n) {
 						x->state = ERR;
 					}
 					else {
-						done = !x->nread;
+						done = 1;
 					}
 
-					char* pos = memchr(x->read_buf, '\n', x->nread);
-					if (pos) {
-						*pos = 0;
-						char* p;
-						for (p=x->read_buf; p!=pos; ++p) {
-							if (isspace(*p)) {
-								*p = 0;
+					if (ERR != x->state) {
+						if (x->discard_line) {
+							char* pos = memchr(x->read_buf, '\n', x->nread);
+							if (pos) {
+								size_t remaining = x->nread - (size_t)(pos - x->read_buf + 1);
+								memmove(x->read_buf, pos + 1, remaining);
+								x->nread = remaining;
+								x->discard_line = 0;
+							}
+							else if (512 == x->nread) {
+								x->nread = 0;
+							}
+
+							if (x->discard_line) {
+								if (n <= 0) {
+									done = 1;
+								}
 								break;
 							}
-							else {
-								*p = (char)toupper(*p);
+						}
+
+						char* pos = memchr(x->read_buf, '\n', x->nread);
+						if (pos) {
+							*pos = 0;
+							char* p;
+							for (p=x->read_buf; p!=pos; ++p) {
+								if (isspace((unsigned char)*p)) {
+									*p = 0;
+									break;
+								}
+								else {
+									*p = (char)toupper((unsigned char)*p);
+								}
 							}
-						}
 
-						if (!strcmp(x->read_buf, "QUIT")) {
-							x->state = S2;
+							if (!strcmp(x->read_buf, "QUIT")) {
+								x->state = S2;
+							}
+							else if (!strcmp(x->read_buf, "NOOP")) {
+								x->state = S3;
+							}
+							else if (!x->read_buf[0]) {
+								x->state = S4;
+							}
+							else {
+								x->state = S5;
+							}
+
+							memmove(x->read_buf, pos + 1, x->nread - (size_t)(pos - x->read_buf + 1));
+							x->nread = x->nread - (size_t)(pos - x->read_buf + 1);
 						}
-						else if (!strcmp(x->read_buf, "NOOP")) {
-							x->state = S3;
-						}
-						else if (!x->read_buf[0]) {
+						else if (512 == x->nread) {
 							x->state = S4;
+							x->discard_line = 1;
+							x->nread = 0;
 						}
-						else {
-							x->state = S5;
-						}
-
-						memcpy(x->read_buf, pos+1, x->nread - (size_t)(pos - x->read_buf + 1));
-						x->nread = x->nread - (size_t)(pos - x->read_buf + 1);
-					}
-					else if (512 == x->nread) {
-						x->state = S4;
-						x->nread = 0;
 					}
 				}
 				else {
@@ -318,19 +342,19 @@ int process_event(int sock, const int flags)
 				break;
 
 			case S2:
-				done = !(flags & BOUNCER_CAN_WRITE) || do_write(x, &e, str_quit, strlen(str_quit), FIN);
+				done = !(flags & BOUNCER_CAN_WRITE) || do_write(x, e, str_quit, strlen(str_quit), FIN);
 				break;
 
 			case S3:
-				done = !(flags & BOUNCER_CAN_WRITE) || do_write(x, &e, str_noop, strlen(str_noop), S1);
+				done = !(flags & BOUNCER_CAN_WRITE) || do_write(x, e, str_noop, strlen(str_noop), S1);
 				break;
 
 			case S4:
-				done = !(flags & BOUNCER_CAN_WRITE) || do_write(x, &e, err_syntax, strlen(err_syntax), S1);
+				done = !(flags & BOUNCER_CAN_WRITE) || do_write(x, e, err_syntax, strlen(err_syntax), S1);
 				break;
 
 			case S5:
-				done = !(flags & BOUNCER_CAN_WRITE) || do_write(x, &e, str_bad_seq, strlen(str_bad_seq), S1);
+				done = !(flags & BOUNCER_CAN_WRITE) || do_write(x, e, str_bad_seq, strlen(str_bad_seq), S1);
 				break;
 
 			case FIN:
@@ -338,7 +362,7 @@ int process_event(int sock, const int flags)
 
 			case ERR:
 				if (flags & BOUNCER_CAN_WRITE) {
-					do_write(x, &e, err_unavail, strlen(err_unavail), ERR);
+					do_write(x, e, err_unavail, strlen(err_unavail), ERR);
 				}
 
 				return 1;

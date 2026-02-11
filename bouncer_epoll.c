@@ -49,6 +49,7 @@ static int accept_socket(int listener, int eh)
 				data[connections].nwritten  = 0;
 				data[connections].towrite   = 0;
 				data[connections].write_buf = NULL;
+				data[connections].discard_line = 0;
 				++connections;
 				return conn;
 			}

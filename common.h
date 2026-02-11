@@ -41,6 +41,7 @@ struct data_t {
 	size_t towrite;
 	const char* write_buf;
 	char read_buf[516]; /* 4.5.3.1.4. Command Line: The maximum total length of a command line including the command word and the <CRLF> is 512 octets.*/
+	int discard_line;
 	enum state_t state;
 };
 
